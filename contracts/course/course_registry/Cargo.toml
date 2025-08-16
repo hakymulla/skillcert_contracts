@@ -18,6 +18,7 @@ strip = "symbols"
 
 [dependencies]
 soroban-sdk = { workspace = true }
+wee_alloc = "0.4"
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }

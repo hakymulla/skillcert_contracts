@@ -1,8 +1,10 @@
 pub use crate::schema::{Course, CourseModule};
-use soroban_sdk::{symbol_short, Env, String, Symbol};
+use crate::utils::{concat_strings, u32_to_string};
 
+use soroban_sdk::{symbol_short, vec, Env, String, Symbol};
 const COURSE_KEY: Symbol = symbol_short!("course");
 const MODULE_KEY: Symbol = symbol_short!("module");
+
 
 pub fn course_registry_add_module(
     env: Env,
@@ -13,23 +15,23 @@ pub fn course_registry_add_module(
     // Verify course exists
     let course_storage_key: (Symbol, String) = (COURSE_KEY, course_id.clone());
 
-    // require!(env.storage().persistent().has(&course_storage_key), "Course with the specified ID does not exist");
-
     if !env.storage().persistent().has(&course_storage_key) {
         panic!("Course with the specified ID does not exist");
     }
 
     let ledger_seq: u32 = env.ledger().sequence();
 
-    let module_id: String = String::from_str(
-        &env,
-        &format!(
-            "module_{}_{:?}_{:?}",
-            course_id.to_string(),
-            position,
-            ledger_seq
-        ),
-    );
+
+    let arr = vec![
+        &env, String::from_str(&env, "module_"), 
+        course_id.clone(), 
+        String::from_str(&env, "_"),
+        u32_to_string(&env, position),
+        String::from_str(&env, "_"),
+        u32_to_string(&env, ledger_seq)
+        ];   
+
+    let module_id = concat_strings(&env, arr);
 
     // Create new module
     let module: CourseModule = CourseModule {
@@ -54,7 +56,7 @@ mod test {
     use soroban_sdk::{log, String, Vec};
     use soroban_sdk::{
         testutils::{Address as _, Ledger as _},
-        Address, Env,
+        Address, Env
     };
 
     #[test]
@@ -65,7 +67,7 @@ mod test {
         let contract_id: Address = env.register(CourseRegistry, {});
         let course_id: String = String::from_str(&env, "course_123");
         let position: u32 = 1;
-        let title: String = String::from_str(&env, "Introduction Module");
+        let title: String = String::from_str(&env, "Intro");
 
         // Create a test course first
         let course: Course = Course {
@@ -232,3 +234,4 @@ mod test {
         });
     }
 }
+

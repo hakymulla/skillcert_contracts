@@ -1,5 +1,7 @@
 use crate::schema::Course;
+use crate::utils::{to_lowercase, trim};
 use soroban_sdk::{symbol_short, Address, Env, String, Symbol, Vec};
+use crate::alloc::string::ToString;
 
 const COURSE_KEY: Symbol = symbol_short!("course");
 const TITLE_KEY: Symbol = symbol_short!("title");
@@ -16,9 +18,8 @@ pub fn course_registry_create_course(
 ) -> Course {
     let caller: Address = env.current_contract_address();
 
-    // ensure the title is not empty and not just whitespace
-    let title_string = title.to_string();
-    let trimmed_title = title_string.trim();
+    let trimmed_title = trim(&env, &title);
+
     if title.is_empty() || trimmed_title.is_empty() {
         panic!("Course error: Course Title cannot be empty");
     }
@@ -27,11 +28,12 @@ pub fn course_registry_create_course(
     if price == 0 {
         panic!("Course error: Price must be greater than 0");
     }
+     let lowercase_title = to_lowercase(&env, &title);
 
     // to avoid duplicate title,
     let title_key: (Symbol, String) = (
         TITLE_KEY,
-        String::from_str(&env, title.to_string().to_lowercase().as_str()),
+        lowercase_title
     );
 
     if env.storage().persistent().has(&title_key) {

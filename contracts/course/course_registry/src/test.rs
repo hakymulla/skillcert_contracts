@@ -1,6 +1,8 @@
 use crate::CourseRegistry;
 use soroban_sdk::{symbol_short, testutils::Address as _, Address, Env, String, Symbol, Vec};
-
+use crate::alloc::string;
+use crate::alloc::string::ToString;
+use alloc::{format, string::String as RustString};
 use crate::{
     functions::{
         get_course::course_registry_get_course,
